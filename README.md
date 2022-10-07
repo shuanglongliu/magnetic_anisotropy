@@ -1,10 +1,6 @@
 # Magnetic Anisotropy
 
-Python codes for managing VASP calculations of magnetic anisotropy. 
-
-The codes in the global directory are for collinear spin alignments. 
-
-The codes in the local directory are for arbitrary spin alignments.
+Python codes for managing VASP calculations of magnetic anisotropy. The codes in the global directory are for collinear spin alignments. The codes in the local directory are for arbitrary spin alignments.
 
 Usage: 
 
