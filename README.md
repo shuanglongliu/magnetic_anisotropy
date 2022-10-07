@@ -12,3 +12,5 @@ Step 3: Modify main.py to submit jobs using Slurm.
 
 Step 4: Modify main.py to collect results.
 
+
+Remember to put a POTCAR file in the working directory where the python codes are placed. 
