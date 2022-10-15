@@ -235,30 +235,6 @@ job_script_hpg_gpu = """#!/bin/bash
 #SBATCH --output=output
 ##SBATCH --dependency=afterok:9106099
 
-module purge; module load cuda/11.1.0 nvhpc/20.11 openmpi/4.0.5 qd/2.3.22 fftw/3.3.8 vasp/6.2.0
-
-source ~/.bash_aliases; keep_log
-
-srun --mpi=pmix vasp_ncl
-"""
-
-job_script_hpg_gpu = """#!/bin/bash
-
-#SBATCH --job-name=Cr3
-#SBATCH --mem-per-cpu=20gb
-#SBATCH -t 4-00:00:00
-#SBATCH -p gpu --gpus=a100:2
-#SBATCH --account=m2qm-efrc
-#SBATCH --qos=m2qm-efrc
-#SBATCH --nodes=1
-#SBATCH --ntasks=2
-#SBATCH --ntasks-per-node=2
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=shlufl@ufl.edu
-#SBATCH --error=error
-#SBATCH --output=output
-##SBATCH --dependency=afterok:9106099
-
 module purge; module load cuda/11.1.0 nvhpc/20.11 qd/2.3.22 openmpi/4.0.5 fftw/3.3.8
 
 export LD_LIBRARY_PATH=/apps/nvidia/nvhpc/Linux_x86_64/20.11/compilers/extras/qd/lib:$LD_LIBRARY_PATH
