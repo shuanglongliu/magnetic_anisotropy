@@ -2,6 +2,15 @@
 import math
 import numpy as np
 
+def appendSpherical_np(xyz):
+    ptsnew = np.hstack((xyz, np.zeros(xyz.shape)))
+    xy = xyz[:,0]**2 + xyz[:,1]**2
+    ptsnew[:,3] = np.sqrt(xy + xyz[:,2]**2)
+    ptsnew[:,4] = np.arctan2(np.sqrt(xy), xyz[:,2]) # for elevation angle defined from Z-axis down
+    #ptsnew[:,4] = np.arctan2(xyz[:,2], np.sqrt(xy)) # for elevation angle defined from XY-plane up
+    ptsnew[:,5] = np.arctan2(xyz[:,1], xyz[:,0])
+    return ptsnew
+
 def sph2cart(sph, rad=False):
     # Convert cartesian coordinate to spherical coordinate
     if rad:
@@ -141,7 +150,7 @@ class magmoms:
             m_vec_car = self.m_mat_car[i]
             m_vec_car = (3*"{:15.10f}").format(*m_vec_car)
             mstring = mstring + m_vec_car + "   \\\n"
-        self.mstring = mstring + "   3000*0.0"
+        self.mstring = mstring
 
     def set_directions(self, directions):
         self.directions = directions

@@ -53,14 +53,14 @@ SAXIS = 0 0 1
 MAGMOM = 0.0 0.0 0.0 \\
          0.0 0.0 1.0 \\
          0.0 0.0 1.0 \\
-         {mstring:s}
+         {mstring:s} 3000*0.0
 
 #### magnetism: constraint ####
 I_CONSTRAINED_M = 1
 M_CONSTR = 0.0 0.0 0.0 \\
          0.0 0.0 1.0 \\
          0.0 0.0 1.0 \\
-         {mstring:s}
+         {mstring:s} 3000*0.0
 LAMBDA =  10.0
 RWIGS = 1.323 1.323 0.741 0.820 0.863 0.370
 
