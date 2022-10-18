@@ -305,6 +305,7 @@ class vasp_jobs_ncl(vasp_job_ncl):
                 self.energies.append(0)
 
     def set_direction_for_one_site(self, i_site=0, direction=[0,0], local_ref_frame=False):
+        self.transform_configurations(global2local = True)
         if local_ref_frame:
             for i in range(self.n_conf):
                 self.configurations_local[i][i_site] = direction
@@ -314,19 +315,12 @@ class vasp_jobs_ncl(vasp_job_ncl):
         self.transform_configurations(global2local = (not local_ref_frame))
         self.get_dir_names()
 
-    def flip_direction_for_one_site(self, i_site=0, local_ref_frame=False):
-        if local_ref_frame:
-            for i in range(self.n_conf):
-                theta, phi = self.configurations_local[i][i_site]
-                theta, phi = get_opposite_direction_sph((theta, phi))
-                self.configurations_local[i][i_site] = [theta, phi]
-            self.transform_configurations(global2local=False)
-        else:
-            for i in range(self.n_conf):
-                theta, phi = self.configurations[i][i_site]
-                theta, phi = get_opposite_direction_sph((theta, phi))
-                self.configurations[i][i_site] = [theta, phi]
-            self.transform_configurations(global2local=True)
+    def flip_direction_for_one_site(self, i_site=0):
+        for i in range(self.n_conf):
+            theta, phi = self.configurations[i][i_site]
+            theta, phi = get_opposite_direction_sph((theta, phi))
+            self.configurations[i][i_site] = [theta, phi]
+        self.transform_configurations(global2local=True)
         self.get_dir_names()
 
     def setup_jobs(self, submit=False):
@@ -409,7 +403,7 @@ class vasp_jobs_ncl(vasp_job_ncl):
             self.dir_name = self.dir_names[i]
             self.get_occmat_eigenvectors()
 
-def restart(myjob, test=True, max_angle=180, de0=1.e-8, max_energy=0.01, has_wave=False):
+def restart(myjob, test=True, max_angle=180, de0=1.e-8, max_energy=0.01, has_wave=False, copy_wave=True):
 
     myjob.get_energies(de0=de0, max_energy=max_energy)
 
@@ -457,10 +451,13 @@ def restart(myjob, test=True, max_angle=180, de0=1.e-8, max_energy=0.01, has_wav
                 directions_flat_i = [item for direction in myjob.configurations_local[i] for item in direction]
                 directions_flat_j = [item for direction in myjob.configurations_local[j] for item in direction]
                 orig = root_dir + myjob.dir_names[j] + "/WAVECAR"
-                dest = root_dir + myjob.dir_names[i] + "/"
+                dest = root_dir + myjob.dir_names[i] + "/WAVECAR"
                 print(ostring.format(*directions_flat_i, myjob.dir_names[i], *directions_flat_j, myjob.dir_names[j]))
                 if not test:
-                    subprocess.run(["cp", orig, dest])
+                    if copy_wave:
+                        subprocess.run(["cp", orig, dest])
+                    else:
+                        subprocess.run(["ln", "-sf", orig, dest])
                     myjob.set_dir_name(dir_name = myjob.dir_names[i])
                     myjob.submit_job()
     else:

@@ -26,21 +26,31 @@ def do():
 
     myjob = vasp_jobs_ncl(n_site=3, magnetic_moments=[3, 4, 4], n_theta=1801, n_phi=3600)
     myjob.setup_local_ref_frames(sites=[0, 1, 2], from_file=True)
+
     myjob.add_configurations([[[  0,0], [  0,0], [  0,0]]], local_ref_frame=True)
+    myjob.add_configurations([[[180,0], [180,0], [180,0]]], local_ref_frame=False)
+
+    #direction_emin = (42.9, 102.4)
+    #myjob.setup_local_ref_frames(sites=[0, 1, 2], z_directions=[direction_emin, direction_emin], from_file=False)
     #myjob.add_thetas_colinear_spin(phi=180, theta_min=6, theta_max=0, ntheta=4, local_ref_frame=True)
     #myjob.add_thetas_colinear_spin(  phi=0, theta_min=0, theta_max=6, ntheta=4, local_ref_frame=True)
     #myjob.add_thetas_colinear_spin(phi=270, theta_min=6, theta_max=0, ntheta=4, local_ref_frame=True)
     #myjob.add_thetas_colinear_spin( phi=90, theta_min=0, theta_max=6, ntheta=4, local_ref_frame=True)
-    #direction_emin = (42.9, 102.4)
-    #myjob.setup_local_ref_frames(sites=[0, 1, 2], z_directions=[direction_emin, direction_emin], from_file=False)
+    #myjob.add_thetas_colinear_spin(phi=180, theta_min=174, theta_max=180, ntheta=4, local_ref_frame=True)
+    #myjob.add_thetas_colinear_spin(  phi=0, theta_min=180, theta_max=174, ntheta=4, local_ref_frame=True)
+    #myjob.add_thetas_colinear_spin(phi=270, theta_min=174, theta_max=180, ntheta=4, local_ref_frame=True)
+    #myjob.add_thetas_colinear_spin( phi=90, theta_min=180, theta_max=174, ntheta=4, local_ref_frame=True)
     #myjob.add_thetas_colinear_spin(  phi=0, theta_min= 0, theta_max=180, ntheta= 7, local_ref_frame=True)
     #myjob.add_thetas_colinear_spin(phi=180, theta_min= 0, theta_max=180, ntheta= 7, local_ref_frame=True)
     #myjob.add_thetas_colinear_spin( phi=90, theta_min= 0, theta_max=180, ntheta= 7, local_ref_frame=True)
     #myjob.add_thetas_colinear_spin(phi=270, theta_min= 0, theta_max=180, ntheta= 7, local_ref_frame=True)
     #myjob.add_phis_colinear_spin( theta=90,   phi_min= 0,   phi_max=330,   nphi=12, local_ref_frame=True)
+
     #myjob.set_direction_for_one_site(i_site=1, direction=[0, 0], local_ref_frame=True)
     #myjob.set_direction_for_one_site(i_site=2, direction=[180, 0], local_ref_frame=True)
-    #myjob.flip_direction_for_one_site(i_site=2, local_ref_frame=True)
+    #myjob.flip_direction_for_one_site(i_site=2)
+
+    #myjob.transform_configurations(global2local = True)
 
     myjob.e_ref = e_ref
 
