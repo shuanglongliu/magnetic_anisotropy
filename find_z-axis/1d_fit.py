@@ -77,9 +77,9 @@ def fit(base_name = "energies.dat", columns=[1, 3], title="Parabola", p0=[0, 0, 
     
 if __name__ == "__main__":
 
-    p0 = [1., 0., 1]
+    p0 = [-1., 0., 1]
 
-    bounds=([0., -5., -5.], [10., 0., 5.])
+    bounds=([-10., -5., -5.], [10., 5., 5.])
 
     fit(base_name = "energies", columns=[1, 3], title="", p0=p0, bounds=bounds)
 
