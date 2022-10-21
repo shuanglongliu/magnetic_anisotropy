@@ -39,6 +39,7 @@ def do():
     #restart(myjob, test=False, max_energy=0.01)
     #myjob.check_local_magmoms_all_configurations()
     #myjob.get_energies(max_energy=0.01, de0=1.e-8)
+    #get_all_energies(myjob, max_energy=0.01, de0=1.e-7)
 
 if __name__ == "__main__":
 

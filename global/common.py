@@ -216,6 +216,11 @@ class vasp_jobs_ncl(vasp_job_ncl):
                 self.dir_names.append(dir_name)
                 self.energies.append(0)
 
+    def add_directions_by_dir_name(self, dir_name="0"):
+
+        self.set_dir_name(dir_name)
+        self.add_directions(directions=[[self.sph.theta, self.sph.phi]], local_ref_frame=False)
+
     def add_thetas(self, phi=0, theta_min=0, theta_max=180, ntheta=2, local_ref_frame=False):
         thetas = np.linspace(theta_min, theta_max, ntheta, endpoint=True)
     
@@ -331,6 +336,16 @@ def restart(myjob, test=True, max_energy=0.01):
             #subprocess.run(["ln", "-s", orig, dest])
             myjob.set_dir_name(dir_name = myjob.dir_names[i])
             myjob.submit_job()
+
+def get_all_energies(myjob, max_energy=0.01, de0=1.e-8):
+    # Assume all directories beginning with 0-9 are DFT directories.
+
+    dir_list = os.listdir(".")
+    for i in range(len(dir_list)):
+        if os.path.isdir(dir_list[i]) and dir_list[i].isnumeric():
+            myjob.add_directions_by_dir_name(dir_list[i])
+    #myjob.print_dirs_and_configs(local_ref_frame=True)
+    myjob.get_energies(max_energy, de0)
 
 if __name__ == "__main__":
 
