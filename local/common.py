@@ -403,7 +403,8 @@ class vasp_jobs_ncl(vasp_job_ncl):
             self.dir_name = self.dir_names[i]
             self.get_occmat_eigenvectors()
 
-def restart(myjob, test=True, max_angle=180, de0=1.e-8, max_energy=0.01, has_wave=False, copy_wave=True):
+def restart(myjob, test=True, max_angle=180, de0=1.e-8, max_energy=0.01, from_neighbor=True, file_name="CHGCAR", copy_it=True):
+    # file_name = "WAVECAR" or "CHGCAR"
 
     myjob.get_energies(de0=de0, max_energy=max_energy)
 
@@ -419,7 +420,7 @@ def restart(myjob, test=True, max_angle=180, de0=1.e-8, max_energy=0.01, has_wav
     jobs_already_done = [i for i, x in enumerate(jobs_status) if x == True]
     jobs_not_done = [i for i, x in enumerate(jobs_status) if x == False]
 
-    if not has_wave:
+    if from_neighbor:
     
         ostring = "Restart ("
         unit_of_ostring = "({:5.1f},{:5.1f}),"
@@ -450,11 +451,11 @@ def restart(myjob, test=True, max_angle=180, de0=1.e-8, max_energy=0.01, has_wav
             if angle <= max_angle:
                 directions_flat_i = [item for direction in myjob.configurations_local[i] for item in direction]
                 directions_flat_j = [item for direction in myjob.configurations_local[j] for item in direction]
-                orig = root_dir + myjob.dir_names[j] + "/WAVECAR"
-                dest = root_dir + myjob.dir_names[i] + "/WAVECAR"
+                orig = root_dir + myjob.dir_names[j] + "/" + file_name
+                dest = root_dir + myjob.dir_names[i] + "/" + file_name
                 print(ostring.format(*directions_flat_i, myjob.dir_names[i], *directions_flat_j, myjob.dir_names[j]))
                 if not test:
-                    if copy_wave:
+                    if copy_it:
                         subprocess.run(["cp", orig, dest])
                     else:
                         subprocess.run(["ln", "-sf", orig, dest])
