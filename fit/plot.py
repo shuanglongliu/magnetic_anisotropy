@@ -60,8 +60,10 @@ def polar_plot(base_name = "energies", title="", columns=(0, 1, 6), factor=1.0):
     
     ax.set_xlim([0, 2*np.pi])
     ax.set_ylim([0, np.pi])
+    #ax.set_ylim([0, np.pi/180*6.5])
 
     ax.set_yticks(np.linspace(0, np.pi, 7, endpoint=True), labels=[u"0\u00b0", u"30\u00b0", u"60\u00b0", u"90\u00b0", u"120\u00b0", u"150\u00b0", u"180\u00b0"])
+    #ax.set_yticks(np.linspace(0, np.pi/180*6.0, 4, endpoint=True), labels=[u"0\u00b0", u"2\u00b0", u"4\u00b0", u"6\u00b0"])
 
     cm = mpl.cm.get_cmap('rainbow')
     
@@ -75,5 +77,5 @@ def polar_plot(base_name = "energies", title="", columns=(0, 1, 6), factor=1.0):
 
 if __name__ == "__main__":
 
-    polar_plot(base_name = "energies", title="Cr3", columns=(1,2,3), factor=1)
+    polar_plot(base_name = "energies_average", title="1st Ru", columns=(1,2,3), factor=1)
 
