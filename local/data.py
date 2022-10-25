@@ -156,7 +156,7 @@ keep_log
 srun -n 128 -c 4 --cpu_bind=cores vasp_ncl 
 """
 
-job_script_hybrid = """#!/bin/bash
+job_script_knl_hybrid = """#!/bin/bash
 
 #SBATCH -A m3346
 #SBATCH -J Co3
@@ -180,16 +180,16 @@ keep_log
 srun -n 32 -c 32 --cpu_bind=cores vasp_ncl
 """
 
-job_script_hipergator = """#!/bin/bash -l
+job_script_hpg_rome = """#!/bin/bash -l
 
 #SBATCH --account=m2qm-efrc
 #SBATCH --qos=m2qm-efrc-b
-#SBATCH --job-name=Co3
+#SBATCH --job-name=Co2
 #SBATCH --mail-type=All
 #SBATCH --mail-user=shlufl@ufl.edu
 #SBATCH --partition=hpg-default
-#SBATCH --nodes=1
-#SBATCH --ntasks=128
+#SBATCH --nodes=4
+#SBATCH --ntasks=256
 #SBATCH --cpus-per-task=1
 #SBATCH --ntasks-per-socket=16
 #SBATCH --mem=200gb
@@ -199,18 +199,19 @@ job_script_hipergator = """#!/bin/bash -l
 #SBATCH --output=output
 ##SBATCH --dependency=afterok:8190473
 
-module purge
-module load intel/2020.0.166 openmpi/4.1.1
+module purge; module load intel/2020.0.166 openmpi/4.0.5
 
 source ~/.bash_aliases; keep_log
 
-srun --mpi=pmix_v2  $HOME/bin/vasp_ncl
+srun --mpi=pmix_v2  $HOME/apps/vasp.6.3.2/bin_cpu/vasp_ncl
+
+rm -rf core.* DOSCAR PROCAR vasprun.xml
 """
 
 job_script_hpg_gpu = """#!/bin/bash
 
-#SBATCH --job-name=Cr3
-#SBATCH --mem-per-cpu=32gb
+#SBATCH --job-name=Co2
+#SBATCH --mem-per-cpu=50gb
 #SBATCH -t 4-00:00:00
 #SBATCH -p gpu --gpus=a100:2
 #SBATCH --account=m2qm-efrc
@@ -224,37 +225,15 @@ job_script_hpg_gpu = """#!/bin/bash
 #SBATCH --output=output
 ##SBATCH --dependency=afterok:9106099
 
-module purge; module load cuda/11.1.0 nvhpc/20.11 openmpi/4.0.5 qd/2.3.22 fftw/3.3.8 vasp/6.2.0
-
-source ~/.bash_aliases; keep_log
-
-srun --mpi=pmix vasp_ncl
-"""
-
-job_script_hpg_gpu = """#!/bin/bash
-
-#SBATCH --job-name=Cr3
-#SBATCH --mem-per-cpu=32gb
-#SBATCH -t 4-00:00:00
-#SBATCH -p gpu --gpus=a100:2
-#SBATCH --account=m2qm-efrc
-#SBATCH --qos=m2qm-efrc
-#SBATCH --nodes=1
-#SBATCH --ntasks=2
-#SBATCH --ntasks-per-node=2
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=shlufl@ufl.edu
-#SBATCH --error=error
-#SBATCH --output=output
-##SBATCH --dependency=afterok:9106099
-
-module purge; module load cuda/11.1.0 nvhpc/20.11 qd/2.3.22 openmpi/4.0.5 fftw/3.3.8
+module purge; module load nvhpc/20.11 openmpi/4.0.5 fftw/3.3.8
 
 export LD_LIBRARY_PATH=/apps/nvidia/nvhpc/Linux_x86_64/20.11/compilers/extras/qd/lib:$LD_LIBRARY_PATH
 
 source ~/.bash_aliases; keep_log
 
-srun --mpi=pmix /home/shlufl/apps/vasp.6.2.1/bin_gpu/vasp_ncl
+srun --mpi=pmix /home/shlufl/apps/vasp.6.3.2/bin_gpu/vasp_ncl
+
+rm -rf core.* DOSCAR PROCAR vasprun.xml
 """
 
 job_script_perlmutter_1_node = """#!/bin/bash

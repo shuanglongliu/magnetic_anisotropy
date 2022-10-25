@@ -94,6 +94,8 @@ class vasp_job:
                 try:
                     out = subprocess.run(["grep", "sigma", "OUTCAR"], capture_output=True)
                     e = float( out.stdout.decode("utf-8").split()[-1] )
+                    # The second last energy which doesn't does not include the vdW interaction.
+                    #e = float( out.stdout.decode("utf-8").split("\n")[-3].split()[-1] )
                     if (e - self.e_ref) < max_energy:
                         self.energy = e
                 except:
