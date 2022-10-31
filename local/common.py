@@ -327,12 +327,12 @@ class vasp_jobs_ncl(vasp_job_ncl):
         for i in range(self.n_conf):
             self.setup_one_job(directions_of_spin = self.configurations[i], local_ref_frame=False, submit=submit)
 
-    def check_convergences(self, restart=False):
+    def check_convergences(self, restart=False, de0=1.e-8):
         self.convergences = []
         for i in range(self.n_conf):
             self.dir_name = self.dir_names[i]
             self.set_directions_of_spin(directions_of_spin=self.configurations[i], local_ref_frame=False)
-            self.check_convergence(restart=restart)
+            self.check_convergence(restart=restart, de0=de0)
             self.convergences.append( self.convergence )
 
     def get_energies(self, de0=1.e-8, max_energy=0.01):
