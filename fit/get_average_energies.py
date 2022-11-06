@@ -20,6 +20,9 @@ def get_energies_without_exchange(base_name = "energies", columns=[1, 2, 7]):
 
     energies = np.loadtxt(fin)
     ne = len(energies)
+    for i in range(ne):
+        if energies[i, colj] == 360.0:
+            energies[i, colj] = 0.0
 
 
 
@@ -52,5 +55,5 @@ def get_energies_without_exchange(base_name = "energies", columns=[1, 2, 7]):
 
 if __name__ == "__main__":
 
-    get_energies_without_exchange(base_name = "energies", columns=[1, 2, 7])
+    get_energies_without_exchange(base_name = "energies", columns=[1, 2, 13])
 
