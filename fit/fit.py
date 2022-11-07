@@ -227,6 +227,7 @@ def fit(base_name = "energies.dat", columns=[1, 2, 7], factor=1.0, title="OCHNH2
 
     popt, pcov = curve_fit(e_ani, (energies[:, coli], energies[:, colj]), energies[:, colk], p0=p0, bounds=bounds)
     print("D = {:12.6f} (meV), E = {:12.6f} (meV), E0 = {:12.6f} (meV), δθ = {:6.1f} (deg), δφ = {:6.1f} (deg)\n".format(*popt[0:3], *np.rad2deg(popt[3:5])))
+    #print("D={:.3f} meV, E={:.3f} meV\n".format(*popt[0:2]))
 
     energies_fitted = e_ani((energies[:, coli], energies[:, colj]), D=popt[0], E=popt[1], E0=popt[2], dtheta=popt[3], dphi=popt[4])
     de = energies_fitted - energies[:, colk]
