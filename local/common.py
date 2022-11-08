@@ -58,11 +58,12 @@ class vasp_job:
             de = out[-2].split()[3]
             if abs(float(de)) < de0:
                 self.convergence = True
-            print("dir_name = {:>15s} , de = {:>15s} , convergence = {:d}.".format(self.dir_name, de, self.convergence))
-            if (not self.convergence) and restart:
-                subprocess.run(["sbatch", "vasp.job"])
+            print("dir_name = {:>50s} , de = {:>15s} , convergence = {:d}.".format(self.dir_name, de, self.convergence))
         except:
+            print("dir_name = {:>50s} , de = {:>15s} , convergence = {:d}.".format(self.dir_name, "NA", self.convergence))
             pass
+        if (not self.convergence) and restart:
+            subprocess.run(["sbatch", "vasp.job"])
         os.chdir(self.root_dir)
 
     def count_nstep(self):
