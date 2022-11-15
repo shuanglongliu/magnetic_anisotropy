@@ -199,10 +199,10 @@ class vasp_job_ncl(vasp_job):
         #subprocess.run(["pwd"])
 
         try:
-            out = subprocess.run(["bash", "/global/homes/h/hcheng/programs/bash/get_local_magmoms.sh", str(self.mms.n_site)], capture_output=True)
+            out = subprocess.run(["bash", "/global/homes/s/shlufl/programs/bash/get_local_magmoms_ncl.sh", str(self.mms.n_site)], capture_output=True)
             out = out.stdout.decode("utf-8").split("\n")
             mms = []
-            for i in range(3):
+            for i in range(self.mms.n_site):
                 tmp = out[i].strip().split()
                 for j in range(3):
                     tmp[j] = float(tmp[j])
@@ -220,9 +220,9 @@ class vasp_job_ncl(vasp_job):
             angles = []
             for i in range(self.mms.n_site):
                 angles.append( get_angle(mms[i], mms_init[i]) )
-            print(("{:30s} " + "{:6.1f} "*self.mms.n_site).format(self.dir_name, *angles))
+            print(("{:50s} " + "{:6.1f} "*self.mms.n_site).format(self.dir_name, *angles))
         except:
-            print(("{:30s} " + "   Nan "*self.mms.n_site).format(self.dir_name))
+            print(("{:50s} " + "   Nan "*self.mms.n_site).format(self.dir_name))
 
         os.chdir(root_dir)
 
