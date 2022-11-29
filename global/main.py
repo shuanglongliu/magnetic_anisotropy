@@ -35,11 +35,11 @@ def do():
     #myjob.print_dirs_and_configs(local_ref_frame=False)
     #myjob.setup_jobs(submit=False)
     #myjob.setup_jobs(submit=True)
-    #restart(myjob, test=True, max_energy=0.01)
-    #restart(myjob, test=False, max_energy=0.01)
+    #restart(myjob, test=True, max_energy=np.inf)
+    #restart(myjob, test=False, max_energy=np.inf)
     #myjob.check_local_magmoms_all_configurations()
-    #myjob.get_energies(max_energy=0.01, de0=1.e-8)
-    #get_all_energies(myjob, max_energy=0.01, de0=1.e-7)
+    #myjob.get_energies(max_energy=np.inf, de0=1.e-8)
+    #get_all_energies(myjob, max_energy=np.inf, de0=1.e-7)
 
 if __name__ == "__main__":
 

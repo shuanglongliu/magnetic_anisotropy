@@ -81,14 +81,14 @@ def do():
     #myjob.print_dirs_and_configs(local_ref_frame=False)
     #myjob.setup_jobs(submit=False)
     #myjob.setup_jobs(submit=True)
-    #restart(myjob, test=True, max_angle=45, max_energy=0.1, from_neighbor=True, file_name="WAVECAR", copy_it=False)
-    #restart(myjob, test=False, max_angle=45, max_energy=0.1, from_neighbor=True, file_name="WAVECAR", copy_it=False)
+    #restart(myjob, test=True, max_angle=45, max_energy=np.inf, from_neighbor=True, file_name="WAVECAR", copy_it=False)
+    #restart(myjob, test=False, max_angle=45, max_energy=np.inf, from_neighbor=True, file_name="WAVECAR", copy_it=False)
     #myjob.check_convergences(restart=False, de0=1.e-8)
     #myjob.check_convergences(restart=True, de0=1.e-8)
     #myjob.check_local_magmoms_all_configurations()
     #myjob.get_occmat_eigenvectors_all_configurations()
-    myjob.get_energies(max_energy=0.1, de0=1.e-8)
-    #get_all_energies(myjob, max_energy=0.1, de0=1.e-8)
+    myjob.get_energies(max_energy=np.inf, de0=1.e-8)
+    #get_all_energies(myjob, max_energy=np.inf, de0=1.e-8)
 
 if __name__ == "__main__":
 
