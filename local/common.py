@@ -102,6 +102,22 @@ class vasp_job:
             pass
         os.chdir(self.root_dir)
 
+    def get_dipole(self):
+
+        self.dipole = [np.nan, np.nan, np.nan, np.nan]
+        os.chdir(self.dir_name)
+        #subprocess.run(["pwd"])
+        try:
+            with open("OUTCAR", "r") as f:
+                for line in f:
+                    if "dipolmoment" in line:
+                        tmp = line.strip().split()
+                        self.dipole = [float(tmp[i]) for i in range(1, 4)]
+                        self.dipole.append(np.linalg.norm(self.dipole))
+        except:
+            pass
+        os.chdir(self.root_dir)
+
 class vasp_job_ncl(vasp_job):
     def __init__(self, n_site=3, magnetic_moments=[3, 3, 3], n_theta=1801, n_phi=3600):
         super().__init__()
@@ -250,6 +266,7 @@ class vasp_jobs_ncl(vasp_job_ncl):
         self.n_conf = len(self.configurations)
         self.dir_names = []
         self.energies = []
+        self.dipoles = []
 
     def get_dir_names(self):
         dir_names = []
@@ -276,6 +293,7 @@ class vasp_jobs_ncl(vasp_job_ncl):
                 self.configurations_local.append(self.directions_of_spin_local)
                 self.dir_names.append(dir_name)
                 self.energies.append(0)
+                self.dipoles.append([np.nan, np.nan, np.nan])
 
     def add_one_configuration_by_dir_name(self, dir_name="0_0_0"):
 
@@ -295,6 +313,7 @@ class vasp_jobs_ncl(vasp_job_ncl):
                 self.configurations_local.append(self.directions_of_spin_local)
                 self.dir_names.append(dir_name)
                 self.energies.append(0)
+                self.dipoles.append([np.nan, np.nan, np.nan])
 
     def add_phis_colinear_spin(self, theta=0, phi_min=0, phi_max=360, nphi=2, local_ref_frame=False):
         phis = np.linspace(phi_min, phi_max, nphi, endpoint=True)
@@ -309,6 +328,7 @@ class vasp_jobs_ncl(vasp_job_ncl):
                 self.configurations_local.append(self.directions_of_spin_local)
                 self.dir_names.append(dir_name)
                 self.energies.append(0)
+                self.dipoles.append([np.nan, np.nan, np.nan])
 
     def set_direction_for_one_site(self, i_site=0, direction=[0,0], local_ref_frame=False):
         self.transform_configurations(global2local = True)
@@ -360,6 +380,31 @@ class vasp_jobs_ncl(vasp_job_ncl):
             ostring2 = ostring2 + "{:15.9f}\n".format( self.energy )
     
         with open("energies.dat", "w") as f:
+            f.write("# global reference frame\n")
+            f.write(ostring1)
+            f.write("\n\n")
+            f.write("# local reference frame\n")
+            f.write(ostring2)
+
+    def get_dipoles(self):
+        self.dipoles = []
+
+        ostring1 = ""
+        ostring2 = ""
+        for i in range(self.n_conf):
+            print(self.dir_names[i])
+            self.dir_name = self.dir_names[i]
+            self.get_dipole()
+            self.dipoles.append(self.dipole)
+            ostring1 = ostring1 + "#"
+
+            for j in range(self.mms.n_site):
+                ostring1 = ostring1 + "{:6.1f}  {:6.1f}  ".format(self.configurations[i][j][0], self.configurations[i][j][1])
+                ostring2 = ostring2 + "{:6.1f}  {:6.1f}  ".format(self.configurations_local[i][j][0], self.configurations_local[i][j][1])
+            ostring1 = ostring1 + "{:12.6f} {:12.6f} {:12.6f} {:12.6f}\n".format( *self.dipole)
+            ostring2 = ostring2 + "{:12.6f} {:12.6f} {:12.6f} {:12.6f}\n".format( *self.dipole)
+    
+        with open("dipoles.dat", "w") as f:
             f.write("# global reference frame\n")
             f.write(ostring1)
             f.write("\n\n")
