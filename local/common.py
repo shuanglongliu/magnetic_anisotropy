@@ -454,22 +454,13 @@ class vasp_jobs_ncl(vasp_job_ncl):
             self.dir_name = self.dir_names[i]
             self.get_occmat_eigenvectors()
 
-def restart(myjob, test=True, max_angle=180, de0=1.e-8, max_energy=0.01, from_neighbor=True, file_name="CHGCAR", copy_it=True):
+def restart(myjob, test=True, max_angle=180, de0=1.e-8, from_neighbor=True, file_name="CHGCAR", copy_it=True):
     # file_name = "WAVECAR" or "CHGCAR"
 
-    myjob.get_energies(de0=de0, max_energy=max_energy)
+    myjob.check_convergences(restart=False, de0=de0)
 
-    jobs_status = [False for i in range(myjob.n_conf)] 
-    for i in range(myjob.n_conf):
-        e = myjob.energies[i]
-        if e - myjob.e_ref < max_energy:
-            jobs_status[i] = True
-    if test:
-        for i in range(myjob.n_conf):
-            print("{:3d}   {:30s}   {:b}".format(i, myjob.dir_names[i], jobs_status[i]))
-
-    jobs_already_done = [i for i, x in enumerate(jobs_status) if x == True]
-    jobs_not_done = [i for i, x in enumerate(jobs_status) if x == False]
+    jobs_already_done = [i for i, x in enumerate(myjob.convergences) if x == True]
+    jobs_not_done = [i for i, x in enumerate(myjob.convergences) if x == False]
 
     if from_neighbor:
     
