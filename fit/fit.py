@@ -228,6 +228,7 @@ def fit(base_name = "energies.dat", columns=[1, 2, 7], factor=1.0, title="OCHNH2
     popt, pcov = curve_fit(e_ani, (energies[:, coli], energies[:, colj]), energies[:, colk], p0=p0, bounds=bounds)
     print("D = {:12.6f} (meV), E = {:12.6f} (meV), E0 = {:12.6f} (meV), δθ = {:6.1f} (deg), δφ = {:6.1f} (deg)\n".format(*popt[0:3], *np.rad2deg(popt[3:5])))
     #print("D={:.3f} meV, E={:.3f} meV\n".format(*popt[0:2]))
+    print("D = {:9.3f} (cm^-1), E = {:9.3f} (cm^-1), E0 = {:12.6f} (cm^-1), δθ = {:6.1f} (deg), δφ = {:6.1f} (deg)\n".format(*(8.06554*popt[0:3]), *np.rad2deg(popt[3:5])))
 
     energies_fitted = e_ani((energies[:, coli], energies[:, colj]), D=popt[0], E=popt[1], E0=popt[2], dtheta=popt[3], dphi=popt[4])
     de = energies_fitted - energies[:, colk]
@@ -287,15 +288,15 @@ if __name__ == "__main__":
 
     e_ani = e_ani_q
 
-    D_min      = -2.0     ;   D_max      = -0.2
+    D_min      = -2.0     ;   D_max      = -0.05
     E_min      = -0.5     ;   E_max      = -0.001
     E0_min     = -10.0    ;   E0_max     =  10.0
-    dtheta_min =  0.      ;   dtheta_max =  5.
+    dtheta_min =  0.      ;   dtheta_max =  0.001
     dphi_min   =  0.      ;   dphi_max   =  180.
 
-    p0 = [ (D_min+D_max)/2, (E_min+E_max)/2, E0_min, dtheta_min, dphi_min+90]
+    p0 = [ (D_min+D_max)/2, (E_min+E_max)/2, E0_min, dtheta_min, dphi_min+60]
 
     bounds=([D_min, E_min, E0_min, dtheta_min, dphi_min], [D_max, E_max, E0_max, dtheta_max, dphi_max])
 
-    fit(base_name = "energies_average", columns=[1, 2, 3], title="Cr3", p0=p0, bounds=bounds, select=1)
+    fit(base_name = "energies_average", columns=[1, 2, 3], title="FePc", p0=p0, bounds=bounds, select=1)
 
