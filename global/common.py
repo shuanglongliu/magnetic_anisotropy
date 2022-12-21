@@ -19,7 +19,7 @@ class vasp_job:
         self.poscar = poscar
         self.kpoints = kpoints
         self.job_script = job_script
-        self.e_ref = 0
+        self.e_ref = 0.0
 
     def set_dir_name(self, dir_name=""):
         self.dir_name = dir_name
@@ -54,17 +54,18 @@ class vasp_job:
         self.convergence = False
         os.chdir(self.dir_name)
         #subprocess.run(["pwd"])
+        de = "NA"
         try:
             out = subprocess.run(["grep", ":", "output"], capture_output=True)
             out = out.stdout.decode("utf-8").split('\n')
             de = out[-2].split()[3]
             if abs(float(de)) < de0:
                 self.convergence = True
-            print("dir_name = {:>15s} , de = {:>15s} , convergence = {:d}.".format(self.dir_name, de, self.convergence))
-            if (not self.convergence) and restart:
-                subprocess.run(["sbatch", "vasp.job"])
         except:
             pass
+        print("dir_name = {:>15s} , de = {:>15s} , convergence = {:d}.".format(self.dir_name, de, self.convergence))
+        if (not self.convergence) and restart:
+            subprocess.run(["sbatch", "vasp.job"])
         os.chdir(self.root_dir)
 
     def count_nstep(self):
@@ -96,7 +97,7 @@ class vasp_job:
                     e = float( out.stdout.decode("utf-8").split()[-1] )
                     # The second last energy which doesn't does not include the vdW interaction.
                     #e = float( out.stdout.decode("utf-8").split("\n")[-3].split()[-1] )
-                    if (e - self.e_ref) < max_energy:
+                    if abs(e - self.e_ref) < max_energy:
                         self.energy = e
                 except:
                     pass
@@ -253,12 +254,12 @@ class vasp_jobs_ncl(vasp_job_ncl):
         for i in range(self.n_direction):
             self.setup_one_job(saxis = self.directions[i], submit=submit)
 
-    def check_convergences(self):
+    def check_convergences(self, restart=False, de0=1.e-8):
         self.convergences = []
         for i in range(self.n_direction):
             self.dir_name = self.dir_names[i]
             self.set_saxis(self.directions[i], local_ref_frame=False)
-            self.check_convergence()
+            self.check_convergence(restart=restart, de0=de0)
             self.convergences.append( self.convergence )
 
     def get_energies(self, max_energy=0.01, de0=1.e-6):
@@ -315,7 +316,7 @@ def restart(myjob, test=True, max_energy=0.01):
     jobs_status = [False for i in range(myjob.n_direction)] 
     for i in range(myjob.n_direction):
         e = myjob.energies[i]
-        if e - myjob.e_ref < max_energy:
+        if abs(e - myjob.e_ref) < max_energy:
             jobs_status[i] = True
 
     if test:
