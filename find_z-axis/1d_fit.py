@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 emat = np.eye(3)
 
 def f(x, a, b, c):
-    return a*(x-c)**2 + b
+    return a*(x-b)**2 + c
 
 def fit(base_name = "energies.dat", columns=[1, 3], title="Parabola", p0=[0, 0, 0], bounds=([0, 0, 0], [1, 1, 1])):
 
@@ -42,7 +42,7 @@ def fit(base_name = "energies.dat", columns=[1, 3], title="Parabola", p0=[0, 0, 
     ### Fit 
 
     popt, pcov = curve_fit(f, data[:, coli], data[:, colj], p0=p0, bounds=bounds)
-    print("c = {:6.3f} (deg)\n".format(popt[2]))
+    print("a = {:12.6f} meV/deg, b = {:6.3f} (deg), c = {:6.3f} meV\n".format(*popt))
 
     data_fitted = f(data[:, coli], a=popt[0], b=popt[1], c=popt[2])
     de = data_fitted - data[:, colj]
@@ -74,12 +74,28 @@ def fit(base_name = "energies.dat", columns=[1, 3], title="Parabola", p0=[0, 0, 
     
     fig.tight_layout()
     fig.savefig("fitting_quality" + ".pdf")
+
+    ### Get the maximum/minimum
+    if popt[0] > 0:
+        emin_fit = np.min(y) + 1000*emin
+        print("Fit mininal energy: {:16.3f} meV\n".format(emin_fit))
+    else:
+        emax_fit = np.max(y) + 1000*emin
+        print("Fit maximal energy: {:16.3f} meV\n".format(emax_fit))
     
 if __name__ == "__main__":
 
-    p0 = [-1., 0., 1]
+    task = "convex" # "convex" or "concave"
 
-    bounds=([-10., -5., -5.], [10., 5., 5.])
-
-    fit(base_name = "energies", columns=[1, 3], title="", p0=p0, bounds=bounds)
+    if task == "convex":
+        p0 = [1., 100., 1]
+        bounds=([-10., 60., -5.], [10., 150., 5.])
+        fit(base_name = "in-plane-low", columns=[2, 7], title="", p0=p0, bounds=bounds)
+    elif task == "concave":
+        p0 = [-1., 280., 1]
+        bounds=([-10., 270., -5.], [10., 300., 5.])
+        fit(base_name = "in-plane-high", columns=[2, 7], title="", p0=p0, bounds=bounds)
+    else:
+        print("Unsupported function. Stopping ...")
+        pass
 
