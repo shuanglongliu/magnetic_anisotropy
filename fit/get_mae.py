@@ -42,6 +42,7 @@ def do(base_name = "energies", columns=(0, 1, 6), factor=1.0):
         if energies[i, column1] == 90.0:
             energies_theta90.append(energies[i, column3])
     
+    easy_axis = False
     if Ez < energies_theta90[0]:
         easy_axis = True
     
