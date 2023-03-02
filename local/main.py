@@ -99,8 +99,8 @@ def do(direction_emin = (0.0, 0.0), e_ref = 0.0, max_energy = np.inf, de0 = 1.e-
     #myjob.check_convergences(restart=True, de0=de0)
     #myjob.check_local_magmoms_all_configurations()
     #myjob.get_occmat_eigenvectors_all_configurations()
-    #restart(myjob, test=True, max_angle=45, max_energy=max_energy, from_neighbor=True, file_name="WAVECAR", copy_it=False)
-    #restart(myjob, test=False, max_angle=45, max_energy=max_energy, from_neighbor=True, file_name="WAVECAR", copy_it=False)
+    #restart(myjob, test=True, max_angle=45, de0=de0, from_neighbor=True, file_name="WAVECAR", copy_it=False)
+    #restart(myjob, test=False, max_angle=45, de0=de0, from_neighbor=True, file_name="WAVECAR", copy_it=False)
     myjob.get_energies(max_energy=max_energy, de0=de0)
     #get_all_energies(myjob, max_energy=max_energy, de0=de0)
 
