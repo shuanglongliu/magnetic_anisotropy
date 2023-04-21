@@ -102,18 +102,27 @@ class vasp_job:
             pass
         os.chdir(self.root_dir)
 
-    def get_dipole(self):
+    def get_dipole(self, crystal=False):
 
         self.dipole = [np.nan, np.nan, np.nan, np.nan]
         os.chdir(self.dir_name)
         #subprocess.run(["pwd"])
+        if crystal:
+            tag = "electronic dipole moment"
+            m = 5
+            n = 8
+        else:
+            tag = "dipolmoment"
+            m = 1
+            n = 4
         try:
             with open("OUTCAR", "r") as f:
                 for line in f:
-                    if "dipolmoment" in line:
+                    if tag in line:
                         tmp = line.strip().split()
-                        self.dipole = [float(tmp[i]) for i in range(1, 4)]
+                        self.dipole = [float(tmp[i]) for i in range(m, n)]
                         self.dipole.append(np.linalg.norm(self.dipole))
+                        break
         except:
             pass
         os.chdir(self.root_dir)
@@ -386,7 +395,7 @@ class vasp_jobs_ncl(vasp_job_ncl):
             f.write("# local reference frame\n")
             f.write(ostring2)
 
-    def get_dipoles(self):
+    def get_dipoles(self, crystal=False):
         self.dipoles = []
 
         ostring1 = ""
@@ -394,7 +403,7 @@ class vasp_jobs_ncl(vasp_job_ncl):
         for i in range(self.n_conf):
             print(self.dir_names[i])
             self.dir_name = self.dir_names[i]
-            self.get_dipole()
+            self.get_dipole(crystal=crystal)
             self.dipoles.append(self.dipole)
             ostring1 = ostring1 + "#"
 
