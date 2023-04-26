@@ -39,6 +39,7 @@ class vasp_job:
         with open("vasp.job", "w") as f:
             f.write(job_script)
         subprocess.run(["ln", "-sf", self.root_dir + "POTCAR", "."])
+        #subprocess.run(["ln", "-sf", "/global/common/software/nersc/pm-stable/sw/vasp/vdw_kernal/vdw_kernel.bindat", "."])
         os.chdir(self.root_dir)
 
     def submit_job(self):
