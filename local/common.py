@@ -251,6 +251,32 @@ class vasp_job_ncl(vasp_job):
 
         os.chdir(root_dir)
 
+    def get_local_magmom(self, i_site):
+        os.chdir(self.dir_name)
+
+        try:
+            out = subprocess.run(["bash", "/home/shlufl/programs/bash/get_local_magmom_ncl.sh", str(i_site+1)], capture_output=True)
+            out = out.stdout.decode("utf-8").strip().split()
+            lmm = np.array([float(out[i]) for i in range(3)])
+        except:
+            lmm = np.array([np.nan, np.nan, np.nan])
+        self.lmm = lmm
+
+        os.chdir(root_dir)
+
+    def get_local_orbmom(self, i_site):
+        os.chdir(self.dir_name)
+
+        try:
+            out = subprocess.run(["bash", "/home/shlufl/programs/bash/get_local_orbmom_ncl.sh", str(i_site+1)], capture_output=True)
+            out = out.stdout.decode("utf-8").strip().split()
+            lom = np.array([float(out[i]) for i in range(3)])
+        except:
+            lom = np.array([np.nan, np.nan, np.nan])
+        self.lom = lom
+
+        os.chdir(root_dir)
+
     def get_occmat_eigenvectors(self):
         os.chdir(self.dir_name)
 
@@ -457,6 +483,39 @@ class vasp_jobs_ncl(vasp_job_ncl):
             self.set_directions_of_spin(directions_of_spin=self.configurations[i], local_ref_frame=False)
             self.dir_name = self.dir_names[i]
             self.check_local_magmoms()
+
+    def get_local_magmom_and_orbmom_all_configurations(self, i_site):
+        self.lmms = []
+        self.loms = []
+        ostring1 = ""
+        ostring2 = ""
+        for i in range(self.n_conf):
+            print(self.dir_names[i])
+            self.set_directions_of_spin(directions_of_spin=self.configurations[i], local_ref_frame=False)
+            self.dir_name = self.dir_names[i]
+            self.get_local_magmom(i_site)
+            self.get_local_orbmom(i_site)
+            self.lmms.append(self.lmm)
+            self.loms.append(self.lom)
+            try:
+                angle = get_angle(self.lmm, self.lom, rad=False)
+            except:
+                angle = np.nan
+
+            ostring1 = ostring1 + "#"
+
+            for j in range(self.mms.n_site):
+                ostring1 = ostring1 + "{:6.1f}  {:6.1f}  ".format(self.configurations[i][j][0], self.configurations[i][j][1])
+                ostring2 = ostring2 + "{:6.1f}  {:6.1f}  ".format(self.configurations_local[i][j][0], self.configurations_local[i][j][1])
+            ostring1 = ostring1 + "{:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f}\n".format( *self.lmm, *self.lom, angle)
+            ostring2 = ostring2 + "{:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f} {:12.6f}\n".format( *self.lmm, *self.lom, angle)
+    
+        with open("lmms_and_loms_site" + str(i_site) + ".dat", "w") as f:
+            f.write("# global reference frame\n")
+            f.write(ostring1)
+            f.write("\n\n")
+            f.write("# local reference frame\n")
+            f.write(ostring2)
 
     def get_occmat_eigenvectors_all_configurations(self):
         for i in range(self.n_conf):
