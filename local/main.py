@@ -20,6 +20,16 @@ def find_global_directions():
     myjob.add_configurations([[[2,90]]], local_ref_frame=True)
     myjob.print_dirs_and_configs(local_ref_frame=False)
 
+def transform_reference_frame(emat):
+
+    myjob = vasp_jobs_ncl(n_site=1, magnetic_moments=[1], n_theta=1801, n_phi=3600)
+    myjob.setup_local_ref_frames(sites=[0], from_file=True)
+    myjob.add_configurations([[[  0, 0]]], local_ref_frame=False)
+    direction_emin = (0.0, 0.0)
+    myjob.setup_local_ref_frames(sites=[0], z_directions=[direction_emin], emats=[emat], from_z_direction=False, from_file=False)
+    myjob.transform_configurations(global2local = True)
+    myjob.print_dirs_and_configs(local_ref_frame=True)
+
 def do(direction_emin = (0.0, 0.0), e_ref = 0.0, max_energy = np.inf, de0 = 1.e-8):
 
     myjob = vasp_jobs_ncl(n_site=3, magnetic_moments=[2, 2, 3], n_theta=1801, n_phi=3600)
@@ -51,7 +61,7 @@ def do(direction_emin = (0.0, 0.0), e_ref = 0.0, max_energy = np.inf, de0 = 1.e-
     myjob.add_thetas_colinear_spin(phi=270, theta_min= 0, theta_max=180, ntheta= 7, local_ref_frame=True)
     myjob.add_phis_colinear_spin( theta=90,   phi_min= 0,   phi_max=330,   nphi=12, local_ref_frame=True)
 
-    ### Exchange interaction.
+    ### Exchange interaction for two sites.
 
     #myjob.add_configurations([[[90, 0], [180, 0], [180, 0], [ 90, 0]]], local_ref_frame=True)
     #myjob.add_configurations([[[90,90], [180, 0], [180, 0], [ 90, 0]]], local_ref_frame=True)
@@ -73,6 +83,51 @@ def do(direction_emin = (0.0, 0.0), e_ref = 0.0, max_energy = np.inf, de0 = 1.e-
     #myjob.add_configurations([[[90, 0], [180, 0], [180, 0], [180, 0]]], local_ref_frame=True)
     #myjob.add_configurations([[[90,90], [180, 0], [180, 0], [180, 0]]], local_ref_frame=True)
     #myjob.add_configurations([[[ 0, 0], [180, 0], [180, 0], [180, 0]]], local_ref_frame=True)
+
+    ### Exchange interaction for more than two sites. Conquer pair by pair.
+
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [ 90, 180], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [ 90, 270], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [180,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [ 90, 180], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [ 90, 270], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [180,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [ 90, 180], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [ 90, 270], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [180,   0], [180, 0]]], local_ref_frame=True)
+
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [ 90,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [ 90,  90], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [  0,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [ 90,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [ 90,  90], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [  0,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [ 90,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [ 90,  90], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [  0,   0], [180, 0]]], local_ref_frame=True)
+
+    #myjob.flip_direction_for_one_site(i_site=0)
+    #myjob.flip_direction_for_one_site(i_site=3)
+
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [ 90, 180], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [ 90, 270], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [180,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [ 90, 180], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [ 90, 270], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [180,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [ 90, 180], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [ 90, 270], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [180,   0], [180, 0]]], local_ref_frame=True)
+
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [ 90,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [ 90,  90], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90, 0], [  0,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [ 90,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [ 90,  90], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [ 90,90], [  0,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [ 90,   0], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [ 90,  90], [180, 0]]], local_ref_frame=True)
+    #myjob.add_configurations([[[  0, 0], [180, 0], [  0,   0], [180, 0]]], local_ref_frame=True)
 
     ### Fix or flip one spin for all configurations.
 
@@ -109,6 +164,8 @@ if __name__ == "__main__":
     #check_and_resubmit()
 
     #find_global_directions()
+
+    #transform_reference_frame(some_emat)
 
     do(direction_emin = (0.0, 0.0), e_ref = 0.0, max_energy = np.inf, de0 = 1.e-8)
 

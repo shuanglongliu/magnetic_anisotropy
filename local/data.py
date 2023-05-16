@@ -1,35 +1,44 @@
-root_dir = "/global/cfs/cdirs/m3346/shlufl/Ce3Mn8/new_molecule/toluate/U_0.80/"
+root_dir = "/pscratch/sd/s/shlufl/Mn4Na/dft_structure/left_hand/exchange/pair_23/hse06/"
 
 incar = """
 SYSTEM = vasp
 
-#### sym ####
+#### symmetry ####
 #ISYM = 0
 
 #### system size ####
 #NBANDS = 448
-#NELECT = 383.0
+#NELECT = 664.0
 
 #### accuracy ####
 PREC = Accurate
-ENCUT = 500
+ENCUT = 600
 LREAL = F
 
 #### parallelization ####
 #KPAR = 4
 NCORE = 16
 
+#### density functional ####
+
+### HSE06 ###
+LHFCALC = T 
+GGA = PE
+HFSCREEN = 0.2 
+PRECFOCK = Accurate
+
 #### electronic optimization ####
-EDIFF = 1E-5
+EDIFF = 1E-8
 NELM = 120
 #NELMIN = 10
-NELMDL = -9
+#NELMDL = -12
 AMIX = 0.2
 AMIX_MAG = 0.4
 AMIX_MIN = 0.05
 BMIX = 0.0001
 BMIX_MAG = 0.0001
-ALGO = Normal
+ALGO = All
+TIME = 0.35
 
 #### structural relaxation ####
 #NSW = 500
@@ -50,36 +59,30 @@ GGA_COMPAT = F
 #### magnetism: noncollinear spin, SOC ####
 LSORBIT = T
 SAXIS = 0 0 1
-MAGMOM = 0.0 0.0 0.0 \\
-         0.0 0.0 1.0 \\
-         0.0 0.0 1.0 \\
-         {mstring:s} 3000*0.0
+MAGMOM = {mstring:s} 3000*0.0
 
 #### magnetism: constraint ####
 I_CONSTRAINED_M = 1
-M_CONSTR = 0.0 0.0 0.0 \\
-         0.0 0.0 1.0 \\
-         0.0 0.0 1.0 \\
-         {mstring:s} 3000*0.0
-LAMBDA =  10.0
-RWIGS = 1.323 1.323 0.741 0.820 0.863 0.370
+M_CONSTR = {mstring:s} 3000*0.0
 
+LAMBDA =  15.0
+RWIGS = 1.323 1.164 0.820 0.741 0.863 1.164 0.370 
 
 #### magnetism: orbital moment ####
 LORBMOM = T
 
 #### charge, wavefunction ####
-ISTART = 0
-ICHARG = 1
-LWAVE = F
-LCHARG = T
+ISTART = 1
+ICHARG = 0
+LWAVE = T
+LCHARG = F
 LAECHG = F
-LMAXMIX = 6
+LMAXMIX = 4
 
 #### dos ####
 ISMEAR = 0
 SIGMA = 0.01
-#NEDOS = 301
+#NEDOS = 2501
 #EMIN = -15
 #EMAX = 10
 LORBIT = 10
@@ -93,32 +96,24 @@ LORBIT = 10
 #IVDW = 11
 
 #### LDA+U ####
-LDAU = T
-LDAUTYPE = 2
-LDAUPRINT = 1
-LDAUL =   3    2    -1   -1   -1   -1
-LDAUU =   2.0  0.8  0.0  0.0  0.0  0.0
-LDAUJ =   0.0  0.0  0.0  0.0  0.0  0.0
-
-#### HSE ####
-#LHFCALC = T 
-#HFSCREEN = 0.2 
-#PRECFOCK = Accurate
-#ALGO = All 
-#TIME = 0.35
+#LDAU = T
+#LDAUTYPE = 2
+#LDAUPRINT = 1
+#LDAUL =   2   -1    -1   -1   -1   -1   -1  
+#LDAUU =   2.5  0.0   0.0  0.0  0.0  0.0  0.0
+#LDAUJ =   0.0  0.0   0.0  0.0  0.0  0.0  0.0
 
 #### wann ####
 #LWANNIER90 = .T.
 #LWRITE_UNK = .TRUE.
 
-### polarization ###
+#### polarization ####
 #IDIPOL = 4
-#LMONO = T
 #LDIPOL = T
+#DIPOL = 0.5 0.5 0.5
 #LCALCPOL = T
-#DIPOL = 0.5 0.5 0.5 
 
-### occupation matrix control ###
+#### occupation matrix control ####
 #OCCEXT = 1
 """
 
@@ -132,28 +127,31 @@ gamma
 poscar = """
 """
 
-job_script_knl = """#!/bin/bash
+job_script_knl_mpi = """#!/bin/bash
 
 #SBATCH -A m3346
-#SBATCH -J Ce3Mn8
+#SBATCH -J Mn4Na
 #SBATCH -q regular
 #SBATCH -C knl 
-#SBATCH -N 2
+#SBATCH -N 5
 #SBATCH --ntasks-per-node=64
-#SBATCH --time=1-00:00:00 
+#SBATCH --time=0-6:00:00 
 #SBATCH --error=error
 #SBATCH --output=output
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=shlufl@ufl.edu
 ##SBATCH --dependency=afterok:45514509
  
-module load vasp/6.2.1-knl
+module load vasp/6.3.2-knl
 
 export OMP_NUM_THREADS=1
 
 keep_log
 
-srun -n 128 -c 4 --cpu_bind=cores vasp_ncl 
+srun -n $SLURM_NTASKS -c 4 --cpu_bind=cores vasp_ncl 
+
+rm CHG CHGCAR PROCAR DOSCAR vasprun.xml vaspout.h5
+sed -i "/PROFILE/d" output
 """
 
 job_script_knl_hybrid = """#!/bin/bash
@@ -180,16 +178,16 @@ keep_log
 srun -n 32 -c 32 --cpu_bind=cores vasp_ncl
 """
 
-job_script_hpg_rome = """#!/bin/bash -l
+job_script_hipergator_rome = """#!/bin/bash -l
 
 #SBATCH --account=m2qm-efrc
 #SBATCH --qos=m2qm-efrc-b
-#SBATCH --job-name=Co2
+#SBATCH --job-name=Co3
 #SBATCH --mail-type=All
 #SBATCH --mail-user=shlufl@ufl.edu
 #SBATCH --partition=hpg-default
-#SBATCH --nodes=4
-#SBATCH --ntasks=256
+#SBATCH --nodes=1
+#SBATCH --ntasks=128
 #SBATCH --cpus-per-task=1
 #SBATCH --ntasks-per-socket=16
 #SBATCH --mem=200gb
@@ -199,19 +197,18 @@ job_script_hpg_rome = """#!/bin/bash -l
 #SBATCH --output=output
 ##SBATCH --dependency=afterok:8190473
 
-module purge; module load intel/2020.0.166 openmpi/4.0.5
+module purge
+module load intel/2020.0.166 openmpi/4.1.1
 
 source ~/.bash_aliases; keep_log
 
-srun --mpi=pmix_v2  $HOME/apps/vasp.6.3.2/bin_cpu/vasp_ncl
-
-rm -rf core.* DOSCAR PROCAR vasprun.xml
+srun --mpi=pmix_v2  $HOME/bin/vasp_ncl
 """
 
-job_script_hpg_gpu = """#!/bin/bash
+job_script_hipergator_a100 = """#!/bin/bash
 
-#SBATCH --job-name=Co2
-#SBATCH --mem-per-cpu=50gb
+#SBATCH --job-name=Cr3
+#SBATCH --mem-per-cpu=32gb
 #SBATCH -t 4-00:00:00
 #SBATCH -p gpu --gpus=a100:2
 #SBATCH --account=m2qm-efrc
@@ -225,72 +222,108 @@ job_script_hpg_gpu = """#!/bin/bash
 #SBATCH --output=output
 ##SBATCH --dependency=afterok:9106099
 
-module purge; module load nvhpc/20.11 openmpi/4.0.5 fftw/3.3.8
-
-export LD_LIBRARY_PATH=/apps/nvidia/nvhpc/Linux_x86_64/20.11/compilers/extras/qd/lib:$LD_LIBRARY_PATH
+module purge; module load cuda/11.1.0 nvhpc/20.11 openmpi/4.0.5 qd/2.3.22 fftw/3.3.8 vasp/6.2.0
 
 source ~/.bash_aliases; keep_log
 
-srun --mpi=pmix /home/shlufl/apps/vasp.6.3.2/bin_gpu/vasp_ncl
-
-rm -rf core.* DOSCAR PROCAR vasprun.xml
+srun --mpi=pmix vasp_ncl
 """
 
-job_script_perlmutter_1_node = """#!/bin/bash
+job_script_perlmutter_cpu = """#!/bin/bash
+
+#SBATCH -A m3346
+#SBATCH -J Mn4
+#SBATCH -C cpu
+#SBATCH -q regular
+#SBATCH -t 8:00:00
+#SBATCH -N 1
+#SBATCH -n 128
+#SBATCH --error=error
+#SBATCH --output=output
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=shlufl@ufl.edu
+##SBATCH --dependency=afterok:3760298
+
+module load PrgEnv-nvidia/8.3.3 vasp/6.3.2-cpu
+
+export OMP_NUM_THREADS=1
+
+source ~/.bash_aliases; keep_log
+
+srun -n 128 -c 2 --cpu-bind=cores vasp_ncl
+
+rm -rf CHG CHGCAR DOSCAR PROCAR vasprun.xml vaspout.h5
+
+sed -i "/PROFILE/d" output
+"""
+
+job_script_perlmutter_gpu_1_node = """#!/bin/bash
+
+#SBATCH -A m3346_g
+#SBATCH -J Mn4Na
+#SBATCH -C gpu
+#SBATCH -q regular
+#SBATCH -t 6:00:00
+#SBATCH -N 1
+#SBATCH -n 4
+#SBATCH -c 32
+#SBATCH -G 4
+#SBATCH --exclusive
+#SBATCH --error=error
+#SBATCH --output=output
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=shlufl@ufl.edu
+##SBATCH --dependency=afterok:45514509
+
+export OMP_NUM_THREADS=1
+export OMP_PLACES=threads
+export OMP_PROC_BIND=spread
+
+module load vasp/6.3.2-gpu
+
+source ~/.bash_aliases; keep_log
+
+srun -n 4 -c 32 --cpu-bind=cores --gpu-bind=none vasp_ncl
+
+rm -rf CHG CHGCAR DOSCAR PROCAR vasprun.xml vaspout.h5
+
+sed -i "/PROFILE/d" output
+"""
+
+job_script_perlmutter_gpu_4_nodes = """#!/bin/bash
+
 #SBATCH -A m3346_g
 #SBATCH -J FePc
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 6:00:00
-#SBATCH -n 4
-#SBATCH --ntasks-per-node=4
-#SBATCH -c 32
-#SBATCH --gpus-per-task=1
-#SBATCH --error=error
-#SBATCH --output=output
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=shlufl@ufl.edu
-##SBATCH --dependency=afterok:45514509
-
-module load vasp/6.2.1-gpu
-
-export OMP_NUM_THREADS=1
-export SLURM_CPU_BIND="cores"
-
-source ~/.bash_aliases; keep_log
-
-#if [ -f CONTCAR ]; then nl=$(wc -l CONTCAR | awk '{printf "%d", $1}'); if [ $nl -gt 8 ]; then cp CONTCAR POSCAR; else echo "Incomplete CONTCAR"; exit; fi; fi
-#if [ -f STOPCAR ]; then rm STOPCAR; fi
-
-srun -n 4 vasp_ncl
-"""
-
-job_script_perlmutter_4_nodes = """#!/bin/bash
-
-#SBATCH -A m3346_g
-#SBATCH -J Ce3
-#SBATCH -C gpu
-#SBATCH -q regular
-#SBATCH -t 01:30:00
+#SBATCH -t 02:00:00
 #SBATCH -N 4
 #SBATCH -n 16
-#SBATCH -G 16
 #SBATCH -c 32
-#SBATCH --gpus-per-task=1
+#SBATCH -G 16
+#SBATCH --exclusive
 #SBATCH --error=error
 #SBATCH --output=output
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=shlufl@ufl.edu
 ##SBATCH --dependency=afterok:45514509
 
-module load vasp/6.2.1-gpu
+export OMP_NUM_THREADS=1
+export OMP_PLACES=threads
+export OMP_PROC_BIND=spread
+
+module load vasp/6.3.2-gpu
 
 source ~/.bash_aliases; keep_log
 
-srun -n 16 -c 32 --cpu-bind=cores -G 16 --gpu-bind=single:1 vasp_ncl
+srun -n 16 -c 32 --cpu-bind=cores --gpu-bind=none vasp_ncl
+
+rm -rf CHG vasprun.xml vaspout.h5
+
+sed -i "/PROFILE/d" output
 """
 
-job_script = job_script_perlmutter_4_nodes
+job_script = job_script_perlmutter_gpu_1_node
 
 emats_file = []
 
