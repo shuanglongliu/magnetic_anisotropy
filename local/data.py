@@ -21,11 +21,41 @@ NCORE = 16
 
 #### density functional ####
 
-### HSE06 ###
-LHFCALC = T 
-GGA = PE
-HFSCREEN = 0.2 
-PRECFOCK = Accurate
+#=== LDA/GGA ===#
+#GGA = PE
+
+#=== METAGGA ===#
+#METAGGA = R2SCAN
+
+#=== Hybrid: HSE06 ===#
+#LHFCALC = T 
+#GGA = PE
+#HFSCREEN = 0.2 
+#PRECFOCK = Accurate
+
+#=== vdW-DF: optB86b ===#
+#GGA      = MK 
+#PARAM1   = 0.1234 
+#PARAM2   = 1.0
+#AGGAC    = 0.0
+#LUSE_VDW = .TRUE.
+#LASPH    = .TRUE.
+
+#=== LIBXC ===#
+#GGA = LIBXC
+#LIBXC1 = GGA_X_PBE
+#LIBXC2 = GGA_C_PBE
+
+#### empirical vdW ####
+#IVDW = 11
+
+#### LDA+U ####
+#LDAU = T
+#LDAUTYPE = 2
+#LDAUPRINT = 1
+#LDAUL =   2   -1    -1   -1   -1   -1   -1  
+#LDAUU =   2.5  0.0   0.0  0.0  0.0  0.0  0.0
+#LDAUJ =   0.0  0.0   0.0  0.0  0.0  0.0  0.0
 
 #### electronic optimization ####
 EDIFF = 1E-8
@@ -91,17 +121,6 @@ LORBIT = 10
 #LPARD = T
 #EINT = -5.0000  -4.7355
 #EINT = -4.7355 -4.0500
-
-#### vdW ####
-#IVDW = 11
-
-#### LDA+U ####
-#LDAU = T
-#LDAUTYPE = 2
-#LDAUPRINT = 1
-#LDAUL =   2   -1    -1   -1   -1   -1   -1  
-#LDAUU =   2.5  0.0   0.0  0.0  0.0  0.0  0.0
-#LDAUJ =   0.0  0.0   0.0  0.0  0.0  0.0  0.0
 
 #### wann ####
 #LWANNIER90 = .T.
