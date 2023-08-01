@@ -7,7 +7,7 @@ import numpy as np
 import copy
 from ase.io import read, write
 from base import sph2cart, cart2sph, change_frame_sph, get_emat_local, magmoms, sphere
-from data import root_dir, incar, poscar, kpoints, job_script, emats_file, emat_file
+from data import root_dir, wave_dir, incar, poscar, kpoints, job_script, emats_file, emat_file
 
 class vasp_job:
 
@@ -40,7 +40,7 @@ class vasp_job:
         with open("vasp.job", "w") as f:
             f.write(job_script)
         subprocess.run(["ln", "-sf", self.root_dir + "POTCAR", "."])
-        subprocess.run(["ln", "-sf", self.root_dir + "0/WAVECAR", "."])
+        subprocess.run(["ln", "-sf", self.root_dir + wave_dir + "/WAVECAR", "."])
         os.chdir(self.root_dir)
 
     def submit_job(self):

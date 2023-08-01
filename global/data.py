@@ -1,4 +1,5 @@
 root_dir = "/global/cfs/cdirs/m3346/shlufl/IETS/nco_basecell_beta_strain/mae/"
+wave_dir = "6476401"
 
 incar = """
 SYSTEM = vasp
