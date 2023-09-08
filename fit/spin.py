@@ -5,7 +5,7 @@ from sympy.physics.quantum import spin, hbar, represent
 
 ### Spin and identify operators
 
-Spin_rational = Rational(3, 2) 
+Spin_rational = Rational(4, 1)
 
 dim = int( 2*Spin_rational + 1 )
 
@@ -34,6 +34,12 @@ ss = Spin*(Spin + 1)
 Sx2 = np.matmul(Sx, Sx)
 Sy2 = np.matmul(Sy, Sy)
 Sz2 = np.matmul(Sz, Sz)
+SxSy = np.matmul(Sx, Sy)
+SxSz = np.matmul(Sx, Sz)
+SySz = np.matmul(Sy, Sz)
+SySx = np.matmul(Sy, Sx)
+SzSx = np.matmul(Sz, Sx)
+SzSy = np.matmul(Sz, Sy)
 Sx4 = np.matmul(Sx2, Sx2)
 Sy4 = np.matmul(Sy2, Sy2)
 Sz4 = np.matmul(Sz2, Sz2)
