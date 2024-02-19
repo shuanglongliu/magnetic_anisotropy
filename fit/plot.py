@@ -64,7 +64,7 @@ def polar_plot(base_name = "energies", title="", columns=(0, 1, 6), factor=1.0, 
     ax.set_xticks(np.linspace(0, 2*np.pi, 9, endpoint=True), labels=[r"$\phi=0$", r"", r"$\phi=\pi/2$", r"", r"$\phi=\pi$", r"", r"$\phi=3\pi/2$", r"", r""])
     ax.set_yticks(np.linspace(0,   np.pi, 7, endpoint=True), labels=[r"$\theta=0$", r"", r"", r"$\theta=\pi/2$", r"", r"", r"$\theta=\pi$"])
 
-    cm = mpl.cm.get_cmap('rainbow')
+    cm = mpl.colormaps.get_cmap('rainbow')
     
     scat = ax.scatter(energies[:,column2], energies[:,column1], s=60, c=energies[:,column3], vmin=emin, vmax=emax, cmap=cm)
     
