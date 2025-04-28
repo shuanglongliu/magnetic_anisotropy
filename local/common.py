@@ -30,17 +30,30 @@ class vasp_job:
     def get_input_files(self, mstring="3*"):
         os.chdir(self.dir_name)
         subprocess.run(["pwd"])
+        subprocess.run(["ln", "-sf", self.root_dir + "POTCAR", "."])
         with open("INCAR", "w") as f:
-            f.write(incar.format(mstring = mstring))
+            f.write(incar.format(mstring = mstring, rwigs = self.get_rwigs()))
         with open("POSCAR", "w") as f:
             f.write(poscar)
         with open("KPOINTS", "w") as f:
             f.write(kpoints)
         with open("vasp.job", "w") as f:
             f.write(job_script)
-        subprocess.run(["ln", "-sf", self.root_dir + "POTCAR", "."])
         #subprocess.run(["ln", "-sf", "/global/common/software/nersc/pm-stable/sw/vasp/vdw_kernal/vdw_kernel.bindat", "."])
         os.chdir(self.root_dir)
+
+    def get_rwigs(self):
+        # Get the Wigner-Seitz radii of the atoms from POTCAR
+        rwigs = ""
+        try:
+            out = subprocess.run(["grep", "RWIGS", "POTCAR"], capture_output=True, text=True)
+            out = out.stdout.rstrip().split("\n")
+            for i in range(len(out)):
+                rwigs = "{:s} {:s}".format(rwigs, out[i].split()[5])
+        except:
+            print("Error in getting RWIGS from POTCAR. Stopping ...")
+            exit()
+        return rwigs
 
     def submit_job(self):
         os.chdir(self.dir_name)
@@ -219,21 +232,45 @@ class vasp_job_ncl(vasp_job):
         else:
             self.get_input_files(mstring = self.mms.mstring)
 
+    def get_local_magmoms_ncl(n_site):
+        f = open('OUTCAR', 'r')
+        data = f.readlines()
+        f.close()
+
+        iline_mx = 0
+        iline_my = 0
+        iline_mz = 0
+
+        for i, line in enumerate(data):
+            if "magnetization (x)" in line:
+                iline_mx = i
+            if "magnetization (y)" in line:
+                iline_my = i
+            if "magnetization (z)" in line:
+                iline_mz = i
+                break
+
+        magnetic_moments = []
+
+        for i_site in range(n_site):
+            magnetic_moments.append([])
+            magnetic_moments[-1].append(float(data[iline_mx+4+i_site].strip().split()[-1]))
+            magnetic_moments[-1].append(float(data[iline_my+4+i_site].strip().split()[-1]))
+            magnetic_moments[-1].append(float(data[iline_mz+4+i_site].strip().split()[-1]))
+
+        with open("local_magmoms", "w") as f:
+            for i_site in range(n_site):
+                f.write("{:6.2f} {:6.2f} {:6.2f}\n".format(*magnetic_moments[i_site]))
+
+        return np.array( magnetic_moments )
+
     def check_local_magmoms(self):
         os.chdir(self.dir_name)
 
         #subprocess.run(["pwd"])
 
         try:
-            out = subprocess.run(["bash", "/global/homes/s/shlufl/programs/bash/get_local_magmoms_ncl.sh", str(self.mms.n_site)], capture_output=True)
-            out = out.stdout.decode("utf-8").split("\n")
-            mms = []
-            for i in range(self.mms.n_site):
-                tmp = out[i].strip().split()
-                for j in range(3):
-                    tmp[j] = float(tmp[j])
-                mms.append(tmp)
-            mms = np.array(mms)
+            mms = self.get_local_magmoms_ncl(self.mms.n_site)
             #print(mms)
             
             mms_init = []
@@ -256,9 +293,28 @@ class vasp_job_ncl(vasp_job):
         os.chdir(self.dir_name)
 
         try:
-            out = subprocess.run(["bash", "/home/shlufl/programs/bash/get_local_magmom_ncl.sh", str(i_site+1)], capture_output=True)
-            out = out.stdout.decode("utf-8").strip().split()
-            lmm = np.array([float(out[i]) for i in range(3)])
+            f = open('OUTCAR', 'r')
+            data = f.readlines()
+            f.close()
+            
+            iline_mx = 0
+            iline_my = 0
+            iline_mz = 0
+            
+            for i, line in enumerate(data):
+                if "magnetization (x)" in line:
+                    iline_mx = i
+                if "magnetization (y)" in line:
+                    iline_my = i
+                if "magnetization (z)" in line:
+                    iline_mz = i
+                    break
+            
+            lmm = []
+            lmm.append(float(data[iline_mx+4+i_site].strip().split()[-1]))
+            lmm.append(float(data[iline_my+4+i_site].strip().split()[-1]))
+            lmm.append(float(data[iline_mz+4+i_site].strip().split()[-1]))
+            lmm = np.array(lmm)
         except:
             lmm = np.array([np.nan, np.nan, np.nan])
         self.lmm = lmm
@@ -269,16 +325,73 @@ class vasp_job_ncl(vasp_job):
         os.chdir(self.dir_name)
 
         try:
-            out = subprocess.run(["bash", "/home/shlufl/programs/bash/get_local_orbmom_ncl.sh", str(i_site+1)], capture_output=True)
-            out = out.stdout.decode("utf-8").strip().split()
-            lom = np.array([float(out[i]) for i in range(3)])
+            f = open('OUTCAR', 'r')
+            data = f.readlines()
+            f.close()
+            
+            iline_mx = 0
+            iline_my = 0
+            iline_mz = 0
+            
+            for i, line in enumerate(data):
+                if "orbital moment (x)" in line:
+                    iline_mx = i
+                if "orbital moment (y)" in line:
+                    iline_my = i
+                if "orbital moment (z)" in line:
+                    iline_mz = i
+                    break
+            
+            lom = []
+            lom.append(float(data[iline_mx+4+i_site].strip().split()[-1]))
+            lom.append(float(data[iline_my+4+i_site].strip().split()[-1]))
+            lom.append(float(data[iline_mz+4+i_site].strip().split()[-1]))
+            lom = np.array(lom)
         except:
             lom = np.array([np.nan, np.nan, np.nan])
         self.lom = lom
 
         os.chdir(root_dir)
 
-    def get_occmat_eigenvectors(self):
+    def get_local_orbmoms_ncl(n_site):
+        os.chdir(self.dir_name)
+
+        #subprocess.run(["pwd"])
+
+        f = open('OUTCAR', 'r')
+        data = f.readlines()
+        f.close()
+
+        iline_mx = 0
+        iline_my = 0
+        iline_mz = 0
+
+        for i, line in enumerate(data):
+            if "orbital moment (x)" in line:
+                iline_mx = i
+            if "orbital moment (y)" in line:
+                iline_my = i
+            if "orbital moment (z)" in line:
+                iline_mz = i
+                break
+
+        orbital_moments = []
+
+        for i_site in range(n_site):
+            orbital_moments.append([])
+            orbital_moments[-1].append(float(data[iline_mx+4+i_site].strip().split()[-1]))
+            orbital_moments[-1].append(float(data[iline_my+4+i_site].strip().split()[-1]))
+            orbital_moments[-1].append(float(data[iline_mz+4+i_site].strip().split()[-1]))
+
+        with open("local_orbmoms.dat", "w") as f:
+            for i_site in range(n_site):
+                f.write("{:6.2f} {:6.2f} {:6.2f}\n".format(*orbital_moments[i_site]))
+
+        print("Local orbital moments are written to local_orbmoms.dat")
+
+        os.chdir(root_dir)
+
+def get_occmat_eigenvectors(self):
         os.chdir(self.dir_name)
 
         subprocess.run(["pwd"])
