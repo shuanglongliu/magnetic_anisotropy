@@ -96,7 +96,7 @@ I_CONSTRAINED_M = 1
 M_CONSTR = {mstring:s} 3000*0.0
 
 LAMBDA =  15.0
-RWIGS = 1.323 1.164 0.820 0.741 0.863 1.164 0.370 
+RWIGS = {rwigs:s}
 
 #### magnetism: orbital moment ####
 LORBMOM = T
