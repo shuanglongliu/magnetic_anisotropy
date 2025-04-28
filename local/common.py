@@ -391,18 +391,105 @@ class vasp_job_ncl(vasp_job):
 
         os.chdir(root_dir)
 
-def get_occmat_eigenvectors(self):
+    def get_occmat():
         os.chdir(self.dir_name)
 
         subprocess.run(["pwd"])
 
-        try:
-            out = subprocess.run(["bash", bash_dir + "get_occmat_eigenvectors_ncl.sh"], capture_output=True)
-            out = out.stdout.decode("utf-8")
-            with open("occmat_eigenvectors", "w") as f:
-                f.write(out)
-        except:
-            pass
+        f = open('OUTCAR', 'r')
+        data = f.readlines()
+        f.close()
+
+        iline_start = 0
+        for i, line in enumerate(data):
+            if 'Iteration' in line:
+                iline_start = i
+
+        data = data[iline_start:]
+
+        natom = 0
+        line_numbers = []
+        ls = []
+        for i, line in enumerate(data):
+            if "atom =" in line and "l =" in line:
+                ls.append(int(line.strip().split()[-1]))
+                natom += 1
+                line_numbers.append(i)
+
+        skip = 4
+        n_spin = 4 # For noncollinear DFT calculations
+
+        entry = "# {:3d}\n".format(natom)
+        i_atom = 0
+        for i_atom in range(natom):
+            l = ls[i_atom]
+            tag = "# {:3d} {:3d} {:3d}\n".format(i_atom+1, l, n_spin)
+            n_line = n_spin*(2*l+1 + 3)
+            entry = entry + tag
+            for line in data[line_numbers[i_atom]+skip:line_numbers[i_atom]+skip+n_line]:
+                if line.strip() == "":
+                    continue
+                else:
+                    entry += line
+            entry += "# \n"
+
+        entry = entry.replace('spin', '# spin')
+
+        with open('occmat', 'w') as f:
+            f.write(entry)
+
+        print("Occupancy matrix is written to occmat")
+
+        os.chdir(root_dir)
+
+    def get_occmat_eigen():
+        os.chdir(self.dir_name)
+
+        subprocess.run(["pwd"])
+
+        f = open('OUTCAR', 'r')
+        data = f.readlines()
+        f.close()
+
+        iline_start = 0
+        for i, line in enumerate(data):
+            if 'Iteration' in line:
+                iline_start = i
+
+        data = data[iline_start:]
+
+        natom = 0
+        line_numbers = []
+        ls = []
+        for i, line in enumerate(data):
+            if "atom =" in line and "l =" in line:
+                ls.append(int(line.strip().split()[-1]))
+                natom += 1
+                line_numbers.append(i)
+
+        skip = 38 # For noncollinear DFT calculations
+        n_spin = 4 # For noncollinear DFT calculations
+        i_atom = 0
+        entry = ""
+        for i_atom in range(natom):
+            l = ls[i_atom]
+            tag = "# {:3d} {:3d} {:3d}\n".format(i_atom+1, l, n_spin)
+            n_line = 2*(2*l + 1)
+            entry = entry + tag
+            for line in data[line_numbers[i_atom]+skip:line_numbers[i_atom]+skip+n_line]:
+                if line.strip() == "":
+                    continue
+                else:
+                    line = line.replace("o =", "")
+                    line = line.strip().split("v =")
+                    line = line[1] + "   #   " + line[0] + "\n"
+                    entry += line
+            print( entry )
+
+        with open('occmat.eigen', 'w') as f:
+            f.write(entry)
+
+        print("Eigenvalues and eigenvectors of occupancy matrix are written to occmat.eigen")
 
         os.chdir(root_dir)
 
