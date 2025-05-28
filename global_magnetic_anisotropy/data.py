@@ -1,4 +1,6 @@
-root_dir = "/global/cfs/cdirs/m3346/shlufl/IETS/nco_basecell_beta_strain/mae/"
+import os
+
+root_dir = os.path.dirname(os.path.abspath(__file__))  + "/"
 wave_dir = "6476401"
 
 incar = """

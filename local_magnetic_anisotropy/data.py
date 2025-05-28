@@ -1,4 +1,6 @@
-root_dir = "/pscratch/sd/s/shlufl/Mn4Na/dft_structure/left_hand/exchange/pair_23/hse06/"
+import os
+
+root_dir = os.path.dirname(os.path.abspath(__file__))  + "/"
 
 incar = """
 SYSTEM = vasp
