@@ -62,16 +62,17 @@ class vasp_job:
         time.sleep(1)
         os.chdir(self.root_dir)
 
-    def check_convergence(self, restart=False, de0=1.e-8):
+    def check_convergence(self, restart=False):
         self.convergence = False
         os.chdir(self.dir_name)
         #subprocess.run(["pwd"])
         try:
-            out = subprocess.run(["grep", ":", "output"], capture_output=True)
-            out = out.stdout.decode("utf-8").split('\n')
-            de = out[-2].split()[3]
-            if abs(float(de)) < de0:
+            out = subprocess.run(["grep", "EDIFF is reached", "OUTCAR"], capture_output=True, text=True)
+            # If out.stdout is empty, the calculation has not converged.
+            if len(out.stdout) > 0:
                 self.convergence = True
+            out = subprocess.run(["grep", ":", "OSZICAR"], capture_output=True, text=True)
+            de = out.stdout.strip().split('\n')[-1].split()[3]
             print("dir_name = {:>50s} , de = {:>15s} , convergence = {:d}.".format(self.dir_name, de, self.convergence))
         except:
             print("dir_name = {:>50s} , de = {:>15s} , convergence = {:d}.".format(self.dir_name, "NA", self.convergence))
@@ -95,23 +96,23 @@ class vasp_job:
             pass
         os.chdir(self.root_dir)
 
-    def get_energy(self, de0=1.e-8, max_energy=0.01):
+    def get_energy(self):
         self.energy = 0
         os.chdir(self.dir_name)
         #subprocess.run(["pwd"])
         try:
-            out = subprocess.run(["grep", ":", "output"], capture_output=True)
-            out = out.stdout.decode("utf-8").split('\n')
-            de = out[-2].split()[3]
-            print(de)
-            if abs(float(de)) < de0:
-                try:
-                    out = subprocess.run(["grep", "sigma", "OUTCAR"], capture_output=True)
-                    e = float( out.stdout.decode("utf-8").split()[-1] )
-                    if (e - self.e_ref) < max_energy:
-                        self.energy = e
-                except:
-                    pass
+            f = open("OUTCAR", "r")
+            data = f.read()
+            f.close()
+        
+            data = data.split("\n")
+            n = len(data)
+        
+            for iline, line in enumerate(data):
+                if "energy(sigma->0)" in line:
+                    line_num = iline
+        
+            self.energy = float( data[line_num].strip().split()[-1] )
         except:
             pass
         os.chdir(self.root_dir)
@@ -589,15 +590,15 @@ class vasp_jobs_ncl(vasp_job_ncl):
         for i in range(self.n_conf):
             self.setup_one_job(directions_of_spin = self.configurations[i], local_ref_frame=False, submit=submit)
 
-    def check_convergences(self, restart=False, de0=1.e-8):
+    def check_convergences(self, restart=False):
         self.convergences = []
         for i in range(self.n_conf):
             self.dir_name = self.dir_names[i]
             self.set_directions_of_spin(directions_of_spin=self.configurations[i], local_ref_frame=False)
-            self.check_convergence(restart=restart, de0=de0)
+            self.check_convergence(restart=restart)
             self.convergences.append( self.convergence )
 
-    def get_energies(self, max_energy=0.01, de0=1.e-8):
+    def get_energies(self):
         self.energies = []
 
         ostring1 = ""
@@ -605,7 +606,7 @@ class vasp_jobs_ncl(vasp_job_ncl):
         for i in range(self.n_conf):
             print(self.dir_names[i])
             self.dir_name = self.dir_names[i]
-            self.get_energy(de0=de0, max_energy=max_energy)
+            self.get_energy()
             self.energies.append(self.energy)
             ostring1 = ostring1 + "#"
 
@@ -723,10 +724,10 @@ class vasp_jobs_ncl(vasp_job_ncl):
             self.dir_name = self.dir_names[i]
             self.get_occmat_eigenvectors()
 
-def restart(myjob, test=True, max_angle=180, de0=1.e-8, from_neighbor=True, file_name="CHGCAR", copy_it=True):
+def restart(myjob, test=True, max_angle=180, from_neighbor=True, file_name="CHGCAR", copy_it=True):
     # file_name = "WAVECAR" or "CHGCAR"
 
-    myjob.check_convergences(restart=False, de0=de0)
+    myjob.check_convergences(restart=False)
 
     jobs_already_done = [i for i, x in enumerate(myjob.convergences) if x == True]
     jobs_not_done = [i for i, x in enumerate(myjob.convergences) if x == False]
@@ -786,7 +787,7 @@ def restart(myjob, test=True, max_angle=180, de0=1.e-8, from_neighbor=True, file
                 myjob.set_dir_name(dir_name = myjob.dir_names[i])
                 myjob.submit_job()
 
-def get_all_energies(myjob, max_energy=0.1, de0=1.e-8):
+def get_all_energies(myjob):
     # Assume all directories beginning with 0-9 are DFT directories.
 
     dir_list = os.listdir(".")
@@ -794,7 +795,7 @@ def get_all_energies(myjob, max_energy=0.1, de0=1.e-8):
         if os.path.isdir(dir_list[i]) and dir_list[i].split("_")[0].isnumeric():
             myjob.add_one_configuration_by_dir_name(dir_list[i])
     myjob.print_dirs_and_configs(local_ref_frame=True)
-    myjob.get_energies(max_energy, de0)
+    myjob.get_energies()
 
 if __name__ == "__main__":
 
